@@ -103,7 +103,7 @@ class TokenizeMask:
         split_input_ids = torch.split(input_ids, 2048, 1)
         hidden_states = []
         for input_id in split_input_ids:
-            outputs = self.model(input_ids=input_id)[2]
+            outputs = self.model(input_ids=input_id.to("cuda"))[2]
             outputs = [h.detach() for h in outputs]
             attention_hidden_states = outputs[1:]
             hidden_state = attention_hidden_states[-1]
@@ -124,7 +124,7 @@ class TokenizeMask:
         sample_shape = list(hidden_states.size())[0]
         # Padding
         sample_padding = torch.zeros(self.max_token_len - sample_shape, self.dim_model)
-        final_hidden_states = torch.cat([hidden_states, sample_padding], axis=0)
+        final_hidden_states = torch.cat([hidden_states, sample_padding.to("cuda")], axis=0)
         # Masking
         attention_mask = torch.cat(
             [torch.ones(sample_shape), torch.zeros(self.max_token_len - sample_shape)],
@@ -198,7 +198,7 @@ class NaiveDataset(torch.utils.data.Dataset):
 
         # Padding input
         sample_padding = torch.zeros(self.max_token_len - sample_shape)
-        padded_input = torch.cat([input, sample_padding], axis=0)
+        padded_input = torch.cat([input, sample_padding.to("cuda")], axis=0)
 
         # Binary tensor for NL tokens
         label = [x for x in label if x < list(nl_index.shape)[0]]

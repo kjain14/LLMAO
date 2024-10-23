@@ -2,6 +2,7 @@ import torch.utils.checkpoint
 import torch
 import argparse
 import json
+from tqdm import tqdm 
 from transformer import VoltronTransformerPretrained, TokenizeMask
 
 
@@ -29,6 +30,7 @@ def get_model(demo_type = 'defects4j', pretrain_type = '6B'):
     )
     model.load_state_dict(torch.load(
         f'model_checkpoints/{demo_type}_{pretrain_type}'), strict=False)
+    model.to("cuda")
     model.eval()
     return model
 
@@ -36,7 +38,6 @@ def get_model(demo_type = 'defects4j', pretrain_type = '6B'):
 def buglines_prediction(model, code_content, demo_type = 'defects4j', pretrain_type = '6B'):
     tokenize_mask = TokenizeMask(pretrain_type)
     code_file = code_content.split("\n")
-    print(code_file)
     filtered_code = []
     for code_line in code_file:
         if code_line and not code_line.strip().startswith('/') and not code_line.strip().startswith('*') and not code_line.strip().startswith('#') and not code_line.strip() == '{' and not code_line.strip() == '}' and code_line not in filtered_code:
@@ -83,9 +84,8 @@ if __name__ == "__main__":
 
     model = get_model()
 
-    for item in json_data:
+    for item in tqdm(json_data):
         final_d4j_fl[item["file_name"]] = buglines_prediction(model, item["text"])
-        print(final_d4j_fl[item["file_name"]])
     
 
     with open(args.output, 'w') as f:
