@@ -38,13 +38,19 @@ def get_model(demo_type = 'defects4j', pretrain_type = '6B'):
 def buglines_prediction(model, code_content, demo_type = 'defects4j', pretrain_type = '6B'):
     tokenize_mask = TokenizeMask(pretrain_type)
     code_file = code_content.split("\n")
+    filtered_to_orig_mapping = {}
     filtered_code = []
+    curr_orig = 0
+    curr_filtered = 0
     for code_line in code_file:
         code_line = code_line + "\n"
         if code_line and not code_line.strip().startswith('/') and not code_line.strip().startswith('*') and not code_line.strip().startswith('#') and not code_line.strip() == '{' and not code_line.strip() == '}' and code_line not in filtered_code:
             if len(code_line.strip()) > 0:
                 filtered_code.append(code_line)
+                filtered_to_orig_mapping[curr_orig] = curr_filtered
+                curr_filtered += 1
 
+        curr_orig += 1
 
     code_lines = ''.join(filtered_code)
     input, mask, input_size, decoded_input = tokenize_mask.generate_token_mask(
