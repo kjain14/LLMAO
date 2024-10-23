@@ -45,7 +45,7 @@ def buglines_prediction(demo_type, code_file_path, pretrain_type):
             code_lines)
         input = input[None, :]
         mask = mask[None, :]
-        predictions = model(input, mask)
+        predictions = model(input.to("cuda"), mask.to("cuda"))
         probabilities = torch.flatten(torch.sigmoid(predictions))
         real_indices = torch.flatten(mask == 1)            
         probabilities = probabilities[real_indices].tolist()        
