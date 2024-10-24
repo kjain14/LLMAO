@@ -72,7 +72,7 @@ def buglines_prediction(model, code_content, demo_type = 'defects4j', pretrain_t
     result_dict = []
     for i, p in enumerate(most_sus):
         if p == 1 and len(filtered_code[i].strip()) > 1:
-            ind = i-1 if demo_type == "defects4j" else i
+            ind = filtered_to_orig_mapping[i]
             result_dict.append({"line": ind, "score": round(probabilities[i]*100,2)})
 
     return result_dict
